@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 export default function MazeEscape() {
-  const mazeArr = [
+  const maze = [
     "#########",
     "#       #",
     "# ####  #",
@@ -9,20 +9,21 @@ export default function MazeEscape() {
     "# ## #  #",
     "#    ####",
     "#      E#",
-    "#########"
+    "#########",
   ];
   const [playerX, setPlayerX] = useState(1);
   const [playerY, setPlayerY] = useState(1);
 
   const drawMaze = () => {
-    return mazeArr.map((row, y) => (
-      <div key={y}>
+    return maze.map((row, y) => (
+      <div key={y} style={{ lineHeight: "1.5", fontFamily: "monospace" }}>
         {row.split("").map((cell, x) => (
           <span
             key={x}
             style={{
               color: x === playerX && y === playerY ? "red" : "black",
               fontWeight: x === playerX && y === playerY ? "bold" : "normal",
+              paddingRight: "5px",
             }}
           >
             {x === playerX && y === playerY ? "P" : cell}
@@ -41,14 +42,14 @@ export default function MazeEscape() {
       if (e.key === "ArrowRight") dx = 1;
       const newX = playerX + dx;
       const newY = playerY + dy;
-      if (mazeArr[newY][newX] !== "#") {
+      if (maze[newY][newX] !== "#") {
         setPlayerX(newX);
         setPlayerY(newY);
-      }
-      if (mazeArr[newY][newX] === "E") {
-        alert("You Win!");
-        setPlayerX(1);
-        setPlayerY(1);
+        if (maze[newY][newX] === "E") {
+          alert("You Win!");
+          setPlayerX(1);
+          setPlayerY(1);
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -56,10 +57,10 @@ export default function MazeEscape() {
   }, [playerX, playerY]);
 
   return (
-    <div className="flex flex-col items-center mt-10">
-      <h1 className="text-2xl font-bold">Maze Escape</h1>
-      <p className="mt-2">Use arrow keys to move the player (P) to the exit (E)!</p>
-      <div className="mt-4 font-mono text-xl">{drawMaze()}</div>
+    <div style={{ textAlign: "center", padding: "20px", fontFamily: "monospace" }}>
+      <h1>Maze Escape</h1>
+      <p>Use arrow keys to move "P" to the exit "E"</p>
+      <div>{drawMaze()}</div>
     </div>
   );
 }

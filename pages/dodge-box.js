@@ -1,92 +1,100 @@
 import { useState, useEffect } from "react";
 
-export default function DodgeBox() {
-  const [playerX, setPlayerX] = useState(180);
+export default function DodgeTheBox() {
+  const [playerX, setPlayerX] = useState(175);
   const [obstacles, setObstacles] = useState([]);
-  const [gameOver, setGameOver] = useState(false);
-
-  const gameWidth = 400;
-  const gameHeight = 400;
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "ArrowLeft") {
-        setPlayerX((prev) => Math.max(prev - 20, 0));
-      } else if (e.key === "ArrowRight") {
-        setPlayerX((prev) => Math.min(prev + 20, gameWidth - 20));
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
+  const [score, setScore] = useState(0);
+  
+  // Create new obstacle every 2 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      setObstacles((prev) => [
-        ...prev,
-        { id: Date.now(), x: Math.random() * (gameWidth - 20), y: 0 },
+      setObstacles((obs) => [
+        ...obs,
+        { x: Math.random() * 350, y: 0, id: Date.now() },
       ]);
-    }, 1500);
+    }, 2000);
     return () => clearInterval(interval);
   }, []);
 
+  // Move obstacles and check for collision
   useEffect(() => {
-    if (gameOver) return;
-    const timer = setInterval(() => {
-      setObstacles((prev) =>
-        prev
-          .map((obs) => ({ ...obs, y: obs.y + 10 }))
-          .filter((obs) => obs.y < gameHeight)
+    const interval = setInterval(() => {
+      setObstacles((obs) =>
+        obs
+          .map((o) => ({ ...o, y: o.y + 5 }))
+          .filter((o) => o.y < 400)
       );
-    }, 100);
-    return () => clearInterval(timer);
-  }, [gameOver]);
+      setScore((prev) => prev + 1);
+    }, 50);
+    return () => clearInterval(interval);
+  }, []);
 
+  // Listen for player movement (left/right arrow keys)
   useEffect(() => {
-    obstacles.forEach((obs) => {
+    const handleKey = (e) => {
+      if (e.key === "ArrowLeft") {
+        setPlayerX((prev) => Math.max(prev - 20, 0));
+      } else if (e.key === "ArrowRight") {
+        setPlayerX((prev) => Math.min(prev + 20, 350));
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, []);
+
+  // Check for collisions
+  useEffect(() => {
+    obstacles.forEach((o) => {
       if (
-        obs.y + 20 > gameHeight - 20 &&
-        obs.x < playerX + 20 &&
-        obs.x + 20 > playerX
+        o.x < playerX + 50 &&
+        o.x + 50 > playerX &&
+        o.y < 380 && // player's vertical position is fixed at 380
+        o.y + 50 > 380
       ) {
-        setGameOver(true);
+        alert("Game Over! Score: " + score);
+        window.location.reload();
       }
     });
-  }, [obstacles, playerX]);
-
-  const resetGame = () => {
-    setPlayerX(180);
-    setObstacles([]);
-    setGameOver(false);
-  };
+  }, [obstacles, playerX, score]);
 
   return (
-    <div className="flex flex-col items-center mt-10">
-      <h1 className="text-2xl font-bold">Dodge the Box</h1>
-      <div className="relative mt-4" style={{ width: `${gameWidth}px`, height: `${gameHeight}px`, backgroundColor: "#eee", border: "1px solid #ccc" }}>
-        <div style={{ position: "absolute", bottom: 0, left: `${playerX}px`, width: "20px", height: "20px", backgroundColor: "blue" }}></div>
-        {obstacles.map((obs) => (
-          <div
-            key={obs.id}
-            style={{
-              position: "absolute",
-              top: `${obs.y}px`,
-              left: `${obs.x}px`,
-              width: "20px",
-              height: "20px",
-              backgroundColor: "red",
-            }}
-          ></div>
+    <div style={styles.container}>
+      <h1>Dodge the Box</h1>
+      <p>Score: {score}</p>
+      <div style={styles.gameArea}>
+        {/* Player */}
+        <div style={{ ...styles.player, left: playerX }} />
+        {/* Obstacles */}
+        {obstacles.map((o) => (
+          <div key={o.id} style={{ ...styles.obstacle, left: o.x, top: o.y }} />
         ))}
       </div>
-      {gameOver && (
-        <div className="mt-4">
-          <p>Game Over!</p>
-          <button onClick={resetGame} className="mt-2 px-4 py-2 bg-blue-500 text-white rounded">
-            Restart
-          </button>
-        </div>
-      )}
     </div>
   );
 }
+
+const styles = {
+  container: { textAlign: "center", padding: "20px" },
+  gameArea: {
+    position: "relative",
+    width: "400px",
+    height: "400px",
+    border: "2px solid black",
+    margin: "0 auto",
+    overflow: "hidden",
+    background: "#eee",
+  },
+  player: {
+    position: "absolute",
+    bottom: "20px",
+    width: "50px",
+    height: "50px",
+    background: "blue",
+  },
+  obstacle: {
+    position: "absolute",
+    width: "50px",
+    height: "50px",
+    background: "red",
+  },
+};

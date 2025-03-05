@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function TargetShooter() {
   const [score, setScore] = useState(0);
@@ -6,26 +6,49 @@ export default function TargetShooter() {
 
   const moveTarget = () => {
     setTargetPosition({
-      x: Math.random() * 300,
-      y: Math.random() * 300,
+      x: Math.random() * 350,
+      y: Math.random() * 350,
     });
   };
 
   return (
-    <div className="flex flex-col items-center mt-10">
-      <h1 className="text-2xl font-bold">Target Shooter</h1>
-      <p className="mt-2">Click the red box as fast as possible!</p>
-      <p className="mt-2 text-lg">Score: {score}</p>
-      <div className="relative w-[400px] h-[400px] bg-gray-200 mt-4">
+    <div style={styles.container}>
+      <h1>Target Shooter</h1>
+      <p>Click the red target!</p>
+      <p>Score: {score}</p>
+      <div style={styles.gameArea}>
         <div
-          className="absolute w-12 h-12 bg-red-500 cursor-pointer"
-          style={{ left: targetPosition.x, top: targetPosition.y }}
+          style={{
+            ...styles.target,
+            left: targetPosition.x,
+            top: targetPosition.y,
+          }}
           onClick={() => {
             setScore(score + 1);
             moveTarget();
           }}
-        ></div>
+        />
       </div>
     </div>
   );
 }
+
+const styles = {
+  container: { textAlign: "center", padding: "20px" },
+  gameArea: {
+    position: "relative",
+    width: "400px",
+    height: "400px",
+    border: "2px solid black",
+    margin: "0 auto",
+    background: "#f4f4f4",
+  },
+  target: {
+    position: "absolute",
+    width: "50px",
+    height: "50px",
+    background: "red",
+    borderRadius: "50%",
+    cursor: "pointer",
+  },
+};
